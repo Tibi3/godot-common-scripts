@@ -1,7 +1,8 @@
 ## Utility functions and constants
 class_name GCS
 
-static var _tree := Engine.get_main_loop() as SceneTree
+# HACK: In some functions I need the SceneTree, this will work in 99% of the time.
+static var _tree := Engine.get_main_loop()
 
 const I64_MAX := 9_223_372_036_854_775_807
 const I64_MIN := -9_223_372_036_854_775_808
@@ -56,7 +57,7 @@ static func wait_async(seconds: float, process_always := false, ignore_time_scal
 ## [codeblock] @onready var nav_agent := GCS.get_component_of(entity, NavigationAgent2D) as NavigationAgent2D [/codeblock]
 ## if [param include_assert] is [code]true[/code]. It will throw an error if the component is not found.[br]
 ## [b]Note[/b]: Only throws error in the Editor.[br]
-## [b]Note[/b]: This function is O(n) but in usually n is small.
+## [b]Note[/b]: This function is O(n) but usually n is small so it does not matter.
 static func get_component_of(entity: Node, component: Variant, include_assert := true) -> Node:
 	for child in entity.get_children():
 		if is_instance_of(child, component):
@@ -200,7 +201,7 @@ class LoadAsyncResult:
 
 
 	## Calls [method PackedScene.instantiate] on the loaded resource.[br]
-	## [b]Note[/b]: Only works if the loaded resource is a [PackedScene]
+	## [b]Note[/b]: Only works if the loaded resource is a [PackedScene].
 	func instantiate() -> Node:
 		assert(resource is PackedScene)
 		return (resource as PackedScene).instantiate()

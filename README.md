@@ -60,6 +60,7 @@ func _ready() -> void:
 
 	# We will have a lot of SimpleEnemy2 too.
 	enemy_pool.add_pool(SimpleEnemy2, GCSObjectPool.new(...))
+	add_child(enemy_pool)
 
 
 func spawn_enemy() -> void:

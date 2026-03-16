@@ -11,6 +11,7 @@
 ##
 ## # Check out "res://addons/godot-common-scripts/default_handlers.gd" to see how to implement you own handler.
 ## GCS_Log.debug("my debug message") # [22:30:56] DEBUG [res://main/main.gd:17]: my debug message
+## GCS.debug("my debug message") # Does the some thing.
 ## [/codeblock]
 class_name GCS_Log
 

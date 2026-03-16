@@ -1,4 +1,4 @@
-## Abstract base class for a [GCS_FSM].
+## Abstract base class for a [GCS_FSM] state.
 class_name GCS_FSMState
 extends Node
 

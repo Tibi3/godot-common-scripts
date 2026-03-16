@@ -8,29 +8,28 @@
 class_name GCS_FSM
 extends Node
 
-## Called after a state changed happend.
+## Called after a state change happend.
 signal state_changed
 
-## If not specified will be set to [member owner]
+## If not specified will be set to [member owner].
 @export var entity: Node
 
-## The current state
-var current_state: GCS_FSMState
+var _current_state: GCS_FSMState
 
 func _ready() -> void:
 	if !is_instance_valid(entity):
 		entity = owner
 
 
-## - Calls [method GCS_FSMState._on_exit] on [member current_state].[br]
+## - Calls [method GCS_FSMState._on_exit] on the current [GCS_FSMState].[br]
 ## - Adds [param state] as a child.
 func change_state(state: GCS_FSMState) -> void:
-	if is_instance_valid(current_state):
-		current_state._on_exit()
-		current_state.queue_free()
+	if is_instance_valid(_current_state):
+		_current_state._on_exit()
+		_current_state.queue_free()
 
-	current_state = state
-	current_state.fsm = self
-	add_child(current_state)
+	_current_state = state
+	_current_state.fsm = self
+	add_child(_current_state)
 
 	state_changed.emit()
