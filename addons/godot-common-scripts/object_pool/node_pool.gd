@@ -54,6 +54,9 @@ extends Node
 @export var max_size := 100
 @export var prewarm := 10
 
+## If [code]false[/code] [Node]s will be removed from the [SceneTree] on [method return_node].
+@export var keep_in_tree := false
+
 var initializer: Callable
 var reset: Callable = _default_reset
 
@@ -77,9 +80,10 @@ func borrow_node() -> Node:
 
 
 func return_node(node: Node) -> void:
-	var parent := node.get_parent()
-	if is_instance_valid(parent):
-		parent.remove_child(node)
+	if !keep_in_tree:
+		var parent := node.get_parent()
+		if is_instance_valid(parent):
+			parent.remove_child(node)
 
 	_node_pool.return_node(node)
 

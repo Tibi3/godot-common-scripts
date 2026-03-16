@@ -18,6 +18,9 @@
 class_name GCSMultiNodePool
 extends Node
 
+## If [code]false[/code] [Node]s will be removed from the [SceneTree] on [method return_node].
+@export var keep_in_tree := false
+
 var _node_pools: Dictionary[Variant, GCSObjectPool]
 
 func _exit_tree() -> void:
@@ -40,8 +43,9 @@ func borrow_node(type: Variant) -> Node:
 
 
 func return_node(type: Variant, node: Node) -> void:
-	var parent := node.get_parent()
-	if is_instance_valid(parent):
-		parent.remove_child(node)
+	if !keep_in_tree:
+		var parent := node.get_parent()
+		if is_instance_valid(parent):
+			parent.remove_child(node)
 
 	_node_pools[type].return_node(node)

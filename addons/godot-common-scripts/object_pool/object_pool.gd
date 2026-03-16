@@ -25,6 +25,7 @@ func _init(p_max_size: int, p_initializer: Callable, p_reset: Callable, p_prewar
 
 	for _i in mini(p_max_size, p_prewarm):
 		var object := _initializer.call() as Object
+		_reset.call(object)
 		assert(is_instance_valid(object), "_initializer returned null in ObjectPool.")
 		_objects.push_back(object)
 
