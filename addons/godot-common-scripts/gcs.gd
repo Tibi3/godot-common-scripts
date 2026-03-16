@@ -1,16 +1,58 @@
 ## Utility functions and constants
 class_name GCS
 
-# HACK: In some functions I need the SceneTree, this will work in 99% of the time.
-static var _tree := Engine.get_main_loop()
+const U8_MAX := 0xFF
+const U16_MAX := 0xFFFF
+const U32_MAX := 0xFFFFFFFF
+const U64_MAX := -1
 
-const I64_MAX := 9_223_372_036_854_775_807
-const I64_MIN := -9_223_372_036_854_775_808
+const I8_MAX := 0x7F
+## [b]Note[/b]: GDScript stores all ints on 64 bit use [constant I8_MIN_MASK] for bitwise operations.
+const I8_MIN := -0x80
+const I8_MIN_MASK := 0x80
+const I16_MAX := 0x7FFF
+## [b]Note[/b]: GDScript stores all ints on 64 bit use [constant I16_MIN_MASK] for bitwise operations.
+const I16_MIN := -0x8000
+const I16_MIN_MASK := 0x8000
+const I32_MAX := 0x7FFFFFFF
+## [b]Note[/b]: GDScript stores all ints on 64 bit use [constant I32_MIN_MASK] for bitwise operations.
+const I32_MIN := -0x80000000
+const I32_MIN_MASK := 0x80000000
+const I64_MAX := 0x7FFFFFFFFFFFFFFF
+const I64_MIN := -0x8000000000000000
 
 const HALF_PI := PI / 2.0
 const LOG10 := log(10)
+const LOG2 := log(2)
+
+## Editor build?
+static var FEATURE_EDITOR := OS.has_feature("editor"): set = _readonly
+## Debug build?
+static var FEATURE_DEBUG := OS.has_feature("debug"): set = _readonly
+## Release build?
+static var FEATURE_RELEASE := OS.has_feature("release"): set = _readonly
+## Running in browser?
+static var FEATURE_WEB := OS.has_feature("web"): set = _readonly
+## Mobile or PC?
+static var FEATURE_DEVICE := _get_device(): set = _readonly
+## What platform the game runs on?[br]
+## This is set to the underling system even if the game is running in the browser.[br]
+## [b]Note[/b]: When running in the browser on bsd this is incorrectly set to linux.
+static var FEATURE_PLATFORM := _get_platform(): set = _readonly
+## Is multithreading supported?
+static var FEATURE_THREAD_SUPPORT := OS.has_feature("threads"): set = _readonly
+## Is move maker running?
+static var FEATURE_MOVIE_MAKER_ACTIVE := OS.has_feature("movie"): set = _readonly
+
+# HACK: In some functions I need the SceneTree, this will work in 99% of the time.
+static var _tree := Engine.get_main_loop()
 
 #region Math Utils
+
+## Base 2 logarithm
+static func log2(value: float) -> float:
+	return log(value) / LOG2
+
 
 ## Base 10 logarithm
 static func log10(value: float) -> float:
@@ -38,6 +80,20 @@ static func us_to_human(usec: int) -> String:
 
 	return "%.2fs" % (usec / 1_000_000.0)
 
+
+## Convert an integer into a binary String[br]
+## [codeblock] GCS.binary(15, 8) # 15 -> 00001111 [/codeblock]
+## [b]Note[/b]:
+static func binary(n: int, pad := 0) -> String:
+	var result := ""
+
+	for i in range(maxi(63 if n < 0 else ceili(log2(n)), pad - 1), -1, -1):
+		if (n >> i) & 1 == 0:
+			result += "0"
+		else:
+			result += "1"
+
+	return result
 
 #endregion
 
@@ -183,6 +239,82 @@ static func err(msg: Variant) -> void:
 
 #endregion
 
+#region Feature Helpers
+
+static func string_device(device: Device) -> String:
+	match device:
+		Device.PC:
+			return "pc"
+		Device.MOBILE:
+			return "mobile"
+		_:
+			return "unknown"
+
+
+static func string_platform(platform: Platform) -> String:
+	match platform:
+		Platform.LINUX:
+			return "linux"
+		Platform.WINDOWS:
+			return "windows"
+		Platform.MACOS:
+			return "macos"
+		Platform.IOS:
+			return "ios"
+		Platform.ANDROID:
+			return "android"
+		Platform.BSD:
+			return "bsd"
+		Platform.VISIONOS:
+			return "visionos"
+		_:
+			return "unknown"
+
+
+## Returns [code]true[/code] if at least one feature is set.[br]See [method OS.has_feature].
+static func features_any(features: PackedStringArray) -> bool:
+	for feature in features:
+		if OS.has_feature(feature):
+			return true
+
+	return false
+
+
+static func _get_device() -> Device:
+	if features_any(["pc", "web_windows", "web_linuxbsd", "web_macos"]):
+		return Device.PC
+	if features_any(["mobile", "web_android", "web_ios"]):
+		return Device.MOBILE
+
+	return Device.UNKNOWN
+
+
+static func _get_platform() -> Platform:
+	# NOTE: this returns the wrong value if browser + bsd.
+	if OS.has_feature("linux") || OS.has_feature("web_linuxbsd"):
+		return Platform.LINUX
+	if OS.has_feature("windows") || OS.has_feature("web_windows"):
+		return Platform.WINDOWS
+	if OS.has_feature("macos") || OS.has_feature("web_macos"):
+		return Platform.MACOS
+	if OS.has_feature("bsd"):
+		return Platform.BSD
+	if OS.has_feature("android"):
+		return Platform.ANDROID
+	if OS.has_feature("ios"):
+		return Platform.IOS
+	if OS.has_feature("visionos"):
+		return Platform.VISIONOS
+
+	return Platform.UNKNOWN
+
+#endregion
+
+
+static func _readonly(_value: Variant) -> void:
+	assert(false, "Trying to set a readonly variable.")
+
+
 ## A wrapper around the loaded resource.
 class LoadAsyncResult:
 	## [constant OK] if loaded successfully.
@@ -209,3 +341,21 @@ class LoadAsyncResult:
 
 	func _to_string() -> String:
 		return "{%s, %s}" % [error_string(status), resource]
+
+
+enum Platform {
+	UNKNOWN,
+	LINUX,
+	WINDOWS,
+	MACOS,
+	IOS,
+	ANDROID,
+	BSD,
+	VISIONOS,
+}
+
+enum Device {
+	UNKNOWN,
+	PC,
+	MOBILE,
+}
