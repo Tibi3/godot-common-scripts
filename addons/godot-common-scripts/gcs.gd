@@ -103,7 +103,7 @@ static func binary(n: int, pad := 0) -> String:
 ## Only exists because I always forgot to add [code].timeout[/code] after [code]get_tree().create_timer()[/code][br]
 ## [b]NOTE[/b]: [param process_always] is [code]false[/code] by default.
 static func wait_async(seconds: float, process_always := false, ignore_time_scale := false, process_in_physics := false) -> Signal:
-	return _tree.create_timer(seconds, process_always, ignore_time_scale, process_in_physics).timeout
+	return _tree.create_timer(seconds, process_always, process_in_physics, ignore_time_scale).timeout
 
 
 ## Scans all children (not grandchildren) of [param node] and returns the first node that is type of [param component].

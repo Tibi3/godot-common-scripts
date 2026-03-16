@@ -1,10 +1,10 @@
-## Abstract base class for a [GCS_FSM] state.
-class_name GCS_FSMState
+## Abstract base class for a [GCSFSM] state.
+class_name GCSFSMState
 extends Node
 
-## The [GCS_FSM] that manages this state.
-var fsm: GCS_FSM
+## The [GCSFSM] that manages this state.
+var fsm: GCSFSM
 
-## Called before changing state with [method GCS_FSM.change_state]
+## Called before changing state with [method GCSFSM.change_state]
 func _on_exit() -> void:
 	pass
