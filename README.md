@@ -4,10 +4,11 @@ I noticed I reimplement a lot of stuff when I start a new project, so I uploaded
 
 ## Contains
 
-- Finate state machine
 - Logger
-- Utility functions
-- TODO: ingame dev console
+- ObjectPool
+- Finate state machine
+- Simplified Multi-threaded loading + other utility functions
+- WIP ingame dev console
 - TODO: shader utility
 
 ## Examples
@@ -32,5 +33,10 @@ else:
 	GCS.warn("Failed to load scene.")
 
 sw.stop("Loading took %s.")
+```
 
+```gd
+var enemy := ObjectPool.borrow_node(Enemy) as Enemy
+enemy.died.connect(func (): ObjectPool.return_node(enemy))
+add_child(enemy)
 ```

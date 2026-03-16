@@ -8,8 +8,6 @@ func _ready() -> void:
 
 	GCS.info("Logger initialized.")
 
-	helper()
 
-
-func helper() -> void:
+func throw_error() -> void:
 	load("asd")
