@@ -81,9 +81,9 @@ static func us_to_human(usec: int) -> String:
 	return "%.2fs" % (usec / 1_000_000.0)
 
 
-## Convert an integer into a binary String[br]
+## Convert [param n] into a binary String[br]
+## Pads the string with "0"s to be at least [pad] long.[br]
 ## [codeblock] GCS.binary(15, 8) # 15 -> 00001111 [/codeblock]
-## [b]Note[/b]:
 static func binary(n: int, pad := 0) -> String:
 	var result := ""
 
@@ -297,12 +297,12 @@ static func _get_platform() -> Platform:
 		return Platform.WINDOWS
 	if OS.has_feature("macos") || OS.has_feature("web_macos"):
 		return Platform.MACOS
+	if OS.has_feature("android") || OS.has_feature("web_android"):
+		return Platform.ANDROID
+	if OS.has_feature("ios") || OS.has_feature("web_ios"):
+		return Platform.IOS
 	if OS.has_feature("bsd"):
 		return Platform.BSD
-	if OS.has_feature("android"):
-		return Platform.ANDROID
-	if OS.has_feature("ios"):
-		return Platform.IOS
 	if OS.has_feature("visionos"):
 		return Platform.VISIONOS
 
