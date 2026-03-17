@@ -7,7 +7,7 @@ I noticed I reimplement a lot of stuff when I start a new project, so I uploaded
 - Logger
 - ObjectPool
 - Finate state machine
-- Simplified Multi-threaded loading + other utility functions
+- Simplified multithreaded loading + other utility functions
 - WIP ingame dev console
 - TODO: shader utility
 
