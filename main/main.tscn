@@ -5,6 +5,43 @@
 [ext_resource type="PackedScene" uid="uid://brn6rc5o83vcc" path="res://addons/godot-common-scripts/terminal/terminal.tscn" id="3_xwkvk"]
 [ext_resource type="Theme" uid="uid://b67ymri6053iv" path="res://addons/godot-common-scripts/terminal/themes/high_res_terminal.theme.tres" id="4_c651c"]
 
+[sub_resource type="Animation" id="Animation_c651c"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Icon:rotation")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [0.0]
+}
+
+[sub_resource type="Animation" id="Animation_3wy1v"]
+resource_name = "idle"
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Icon:rotation")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [0.0, 6.283185307179586]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_kfbq2"]
+_data = {
+&"RESET": SubResource("Animation_c651c"),
+&"idle": SubResource("Animation_3wy1v")
+}
+
 [node name="Main" type="Node2D" unique_id=1208018391]
 script = ExtResource("1_53q0u")
 
@@ -13,6 +50,11 @@ script = ExtResource("1_53q0u")
 [node name="Icon" type="Sprite2D" parent="." unique_id=472351963]
 position = Vector2(-196, 203)
 texture = ExtResource("2_xwkvk")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="Icon" unique_id=1367991836]
+root_node = NodePath("../..")
+libraries/ = SubResource("AnimationLibrary_kfbq2")
+autoplay = &"idle"
 
 [node name="Icon2" type="Sprite2D" parent="." unique_id=1766816274]
 position = Vector2(-225, -84)

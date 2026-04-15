@@ -20,13 +20,22 @@ theme_type_variation = &"TerminalHeader"
 [node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/TerminalHeader" unique_id=2099799284]
 layout_mode = 2
 
-[node name="Button" type="Button" parent="VBoxContainer/TerminalHeader/HBoxContainer" unique_id=687294508]
+[node name="Control" type="Control" parent="VBoxContainer/TerminalHeader/HBoxContainer" unique_id=1425839806]
+layout_mode = 2
+
+[node name="PauseButton" type="Button" parent="VBoxContainer/TerminalHeader/HBoxContainer" unique_id=1928288441]
+layout_mode = 2
+size_flags_horizontal = 8
+text = "Pause"
+flat = true
+
+[node name="CloseButton" type="Button" parent="VBoxContainer/TerminalHeader/HBoxContainer" unique_id=687294508]
 layout_mode = 2
 size_flags_horizontal = 10
 text = " X "
 flat = true
 
-[node name="Control" type="Control" parent="VBoxContainer/TerminalHeader/HBoxContainer" unique_id=1425839806]
+[node name="Control2" type="Control" parent="VBoxContainer/TerminalHeader/HBoxContainer" unique_id=531366444]
 layout_mode = 2
 
 [node name="TerminalBody" type="PanelContainer" parent="VBoxContainer" unique_id=550154752]
@@ -51,6 +60,38 @@ keep_editing_on_text_submit = true
 caret_blink = true
 caret_blink_interval = 0.5
 
+[node name="Control" type="Control" parent="VBoxContainer/HBoxContainer/LineEdit" unique_id=478825660]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+grow_horizontal = 2
+mouse_filter = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="VBoxContainer/HBoxContainer/LineEdit/Control" unique_id=573427061]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -4.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+theme_override_constants/margin_left = 2
+theme_override_constants/margin_top = 2
+theme_override_constants/margin_right = 2
+theme_override_constants/margin_bottom = 2
+
+[node name="PanelContainer" type="PanelContainer" parent="VBoxContainer/HBoxContainer/LineEdit/Control/MarginContainer" unique_id=510619951]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="SuggestionVBoxContainer" type="VBoxContainer" parent="VBoxContainer/HBoxContainer/LineEdit/Control/MarginContainer/PanelContainer" unique_id=823444273]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+alignment = 2
+
 [node name="ResizeLabel" type="Label" parent="VBoxContainer/HBoxContainer" unique_id=291849606]
 modulate = Color(0.4392157, 0.4392157, 0.4392157, 1)
 layout_mode = 2
@@ -59,5 +100,7 @@ mouse_default_cursor_shape = 12
 text = " #  "
 
 [connection signal="gui_input" from="VBoxContainer/TerminalHeader" to="." method="_on_header_panel_container_gui_input"]
+[connection signal="pressed" from="VBoxContainer/TerminalHeader/HBoxContainer/PauseButton" to="." method="_on_pause_button_pressed" flags=18]
+[connection signal="gui_input" from="VBoxContainer/HBoxContainer/LineEdit" to="." method="_on_line_edit_gui_input"]
 [connection signal="text_submitted" from="VBoxContainer/HBoxContainer/LineEdit" to="." method="_on_line_edit_text_submitted"]
 [connection signal="gui_input" from="VBoxContainer/HBoxContainer/ResizeLabel" to="." method="_on_resize_label_gui_input"]
