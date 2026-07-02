@@ -32,52 +32,33 @@ static func debug(msg: Variant, trace_offset := 0) -> void:
 	if level > Level.DEBUG:
 		return
 
-	var from := _where(trace_offset)
-	var time := Time.get_datetime_dict_from_system()
 
 	for handler in _handlers:
-		handler.debug(msg, from["source"], from["line"], time)
+		handler.debug(msg, trace_offset)
 
 
 static func info(msg: Variant, trace_offset := 0) -> void:
 	if level > Level.INFO:
 		return
 
-	var from := _where(trace_offset)
-	var time := Time.get_datetime_dict_from_system()
-
 	for handler in _handlers:
-		handler.info(msg, from["source"], from["line"], time)
+		handler.info(msg, trace_offset)
 
 
 static func warn(msg: Variant, trace_offset := 0) -> void:
 	if level > Level.WARNING:
 		return
 
-	var from := _where(trace_offset)
-	var time := Time.get_datetime_dict_from_system()
-
 	for handler in _handlers:
-		handler.warn(msg, from["source"], from["line"], time)
+		handler.warn(msg, trace_offset)
 
 
 static func err(msg: Variant, trace_offset := 0) -> void:
 	if level > Level.ERROR:
 		return
 
-	var from := _where(trace_offset)
-	var time := Time.get_datetime_dict_from_system()
-
 	for handler in _handlers:
-		handler.err(msg, from["source"], from["line"], time)
-
-
-static func _where(offset: int) -> Dictionary:
-	var stack := get_stack()
-	if stack.is_empty():
-		return { "file": "-", "line": 0 }
-
-	return stack[2 + offset]
+		handler.err(msg, trace_offset)
 
 
 enum Level {
@@ -90,17 +71,25 @@ enum Level {
 
 ## An abstract base class for handling logging.
 class Handler:
-	func debug(_msg: Variant, _file: String, _line: int, _time: Dictionary) -> void:
+	func debug(_msg: Variant, _trace_offset: int) -> void:
 		pass
 
 
-	func info(_msg: Variant, _file: String, _line: int, _time: Dictionary) -> void:
+	func info(_msg: Variant, _trace_offset: int) -> void:
 		pass
 
 
-	func warn(_msg: Variant, _file: String, _line: int, _time: Dictionary) -> void:
+	func warn(_msg: Variant, _trace_offset: int) -> void:
 		pass
 
 
-	func err(_msg: Variant, _file: String, _line: int, _time: Dictionary) -> void:
+	func err(_msg: Variant, _trace_offset: int) -> void:
 		pass
+
+
+	func _where(offset: int) -> Dictionary:
+		var stack := get_stack()
+		if stack.is_empty():
+			return { "file": "-", "line": 0 }
+
+		return stack[3 + offset]

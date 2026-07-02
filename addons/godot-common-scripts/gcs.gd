@@ -95,6 +95,15 @@ static func binary(n: int, pad := 0) -> String:
 
 	return result
 
+
+## [codeblock]
+## var counter := GCS.count(0)
+## while true:
+##	print(counter.next()) # prints 0, 1, 2...
+## [/codeblock]
+static func count(from := 0, inc := 1) -> GCSCounter:
+	return GCSCounter.new(from, inc)
+
 #endregion
 
 #region Node Utils
@@ -104,6 +113,13 @@ static func binary(n: int, pad := 0) -> String:
 ## [b]NOTE[/b]: [param process_always] is [code]false[/code] by default.
 static func wait_async(seconds: float, process_always := false, ignore_time_scale := false, process_in_physics := false) -> Signal:
 	return _tree.create_timer(seconds, process_always, process_in_physics, ignore_time_scale).timeout
+
+
+## Calls [method Node.queue_free] on [param node] after [param time_sec] seconds.
+static func queue_free_async(node: Node, time_sec: float) -> void:
+	await wait_async(time_sec)
+	if is_instance_valid(node):
+		node.queue_free()
 
 
 ## Scans all children (not grandchildren) of [param node] and returns the first node that is type of [param component].
@@ -123,10 +139,34 @@ static func get_component_of(entity: Node, component: Variant, include_assert :=
 	return null
 
 
+## Returns an array containing all [param component] children of [param entity].
+static func get_components_of(entity: Node, component: Variant) -> Array:
+	var result: Array
+	for child in entity.get_children():
+		if is_instance_of(child, component):
+			result.push_back(child)
+
+	return result
+
+
 ## Calls [method Node.queue_free] on the children of [param node].
 static func clear_children(node: Node, include_internal := false) -> void:
 	for child in node.get_children(include_internal):
 		child.queue_free()
+
+
+## Sets the disabled property of all [CollisionShape2D] and [CollisionPolygon2D] children of [param node].
+static func disable2d(node: CollisionObject2D, value: bool) -> void:
+	for child in node.get_children():
+		if child is CollisionShape2D || child is CollisionPolygon2D:
+			child.disabled = value
+
+
+## Sets the disabled property of all [CollisionShape3D] and [CollisionPolygon3D] children of [param node].
+static func disable3d(node: CollisionObject3D, value: bool) -> void:
+	for child in node.get_children():
+		if child is CollisionShape3D || child is CollisionPolygon3D:
+			child.disabled = value
 
 
 ## Instead of writing this every time:
@@ -206,6 +246,77 @@ static func lambda(callable: Callable) -> Callable:
 
 #endregion
 
+#region Signals Utils
+
+## [codeblock]
+## var slider: HSlider = ...
+##
+## # slider.value_changed is emitted every frame, but our callback is called every 250ms with the latest value.
+## # The callback must expect an array as argument.
+## GCS.debounce_async(slider.value_changed, 250).connect(func (value: Array):
+## 		GCS.info("Value changed to %f" % value[0]))
+## [/codeblock]
+static func debounce_async(p_signal: Signal, p_ms := 500) -> Signal:
+	var sw := GCSSignalWrapper.new()
+
+	const LAST_EMITED_MS = 0
+	const EVENT_COUNTER = 1
+	var shared: Array[int] = [I32_MIN, -1]
+
+	p_signal.connect(func (...args: Array):
+			shared[EVENT_COUNTER] += 1
+
+			if !lately_ms(shared[LAST_EMITED_MS], p_ms):
+				shared[LAST_EMITED_MS] = Time.get_ticks_msec()
+				sw.inner.emit(args)
+				return
+
+			var last_emmited_ms_local = shared[LAST_EMITED_MS]
+			var id = shared[EVENT_COUNTER]
+			await GCS.wait_async((p_ms - (Time.get_ticks_msec() - last_emmited_ms_local)) / 1000.0, true, true)
+			if id == shared[EVENT_COUNTER]:
+				shared[LAST_EMITED_MS] = Time.get_ticks_msec()
+				sw.inner.emit(args)
+			)
+
+	return sw.inner
+
+
+## Waits until at least one signal is emitted.
+static func wait_first_async(p_signals: Array[Signal]) -> Signal:
+	var sw := GCSSignalWrapper.new()
+	var is_done := [false]
+	for x in p_signals:
+		x.connect(func (...args):
+				if is_done[0] == true:
+					return
+				is_done[0] = true
+				sw.inner.emit(args)
+				, CONNECT_ONE_SHOT)
+	return sw.inner
+
+
+## Waits until every signal is emitted.
+static func wait_all_async(p_signals: Array[Signal]) -> Signal:
+	assert(!p_signals.is_empty())
+	var sw := GCSSignalWrapper.new()
+	var counter := [0]
+	var all_args: Array[Array]
+	all_args.resize(p_signals.size())
+	var i := 0
+	for x in p_signals:
+		x.connect(func (...args: Array):
+				counter[0] += 1
+				all_args[i] = args
+				if counter[0] == p_signals.size():
+					sw.inner.emit(all_args)
+				, CONNECT_ONE_SHOT)
+		i += 1
+
+	return sw.inner
+
+#endregion
+
 #region Log
 
 ## Creates an instance of [GCSStopwatch].
@@ -241,6 +352,7 @@ static func err(msg: Variant) -> void:
 
 #region Feature Helpers
 
+## Converts [param device] into [String].
 static func string_device(device: Device) -> String:
 	match device:
 		Device.PC:
@@ -251,6 +363,7 @@ static func string_device(device: Device) -> String:
 			return "unknown"
 
 
+## Converts [param platform] into [String].
 static func string_platform(platform: Platform) -> String:
 	match platform:
 		Platform.LINUX:
@@ -341,6 +454,29 @@ class LoadAsyncResult:
 
 	func _to_string() -> String:
 		return "{%s, %s}" % [error_string(status), resource]
+
+
+class GCSSignalWrapper:
+	signal inner
+
+
+class GCSCounter:
+	var _next: int
+	var _inc: int
+
+	func _init(p_value: int, p_inc: int) -> void:
+		_next = p_value
+		_inc = p_inc
+
+
+	func peek() -> int:
+		return _next
+
+
+	func next() -> int:
+		var value := _next
+		_next += 1
+		return value
 
 
 enum Platform {
